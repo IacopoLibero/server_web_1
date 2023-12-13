@@ -2,12 +2,15 @@ package com.example;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server {
+public class Server 
+{
     public static void main(String[] args) 
     {
         try 
@@ -36,18 +39,11 @@ public class Server {
                     System.out.println("Linea ricevuta: " + line);
                     line = reader.readLine();
                 }
-
+                File directory = new File("/html/index.html");
                 // Ricerca del file sul disco
                 if (file.exists()) 
                 {
-                    String mess="file esiste";
-                    System.out.println("File trovato");
-
-                    // Invio della risposta al client
-                    out.writeBytes("HTTP/1.1 200 OK\n");
-                    out.writeBytes("Content-lenght: "+mess.length()+"\n");
-                    out.writeBytes("\n");
-                    out.writeBytes(mess);
+                    sendBinaryFile(clientSocket, directory);
                 } 
                 else 
                 {
@@ -57,6 +53,7 @@ public class Server {
                     // Invio della risposta al client
                     out.writeBytes("HTTP/1.1 404 not found\n");
                     out.writeBytes("Content-lenght: "+mess.length()+"\n");
+                    out.writeBytes("Content-type: text/html\n");
                     out.writeBytes("\n");
                     out.writeBytes(mess);
                 }
@@ -70,4 +67,71 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+    
+    private static void sendBinaryFile(Socket socket, File file)
+    {
+        try
+        {
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeBytes("HTTP/1.1 200 OK\n");
+            out.writeBytes("Content-lenght: "+file.length()+"\n");
+
+            //funzione per scegliere estensione
+            out.writeBytes("Content-type:"+getFileExtension(file)+"\n");
+
+            out.writeBytes("\n");
+            FileInputStream in = new FileInputStream(file);
+            byte[] buffer = new byte[8192];
+            int n;
+            while((n=in.read(buffer))!=-1)
+            {
+                out.write(buffer,0,n);
+            }
+            in.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    private static String getFileExtension(File file) 
+    {
+        String fileName = file.getName();
+        int dotIndex = fileName.lastIndexOf(".");
+        fileName= fileName.substring(dotIndex + 1);
+        switch (fileName) 
+        {
+            case "html":
+            {
+                return "text/html";
+            }
+            case "jpeg":
+            {
+                return "image/jpeg";
+            }
+            case "jpg":
+            {
+                return "image/jpeg";
+            }
+            case "png":
+            {
+                return "image/png";
+            }
+            case "css":
+            {
+                return "text/css";
+            }
+            case "js":
+            {
+                return "text/javascript";
+            }
+            default:
+            {
+                return "text/plain";
+            }
+        }
+    }
+
 }
