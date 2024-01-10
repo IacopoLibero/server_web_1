@@ -27,34 +27,46 @@ public class Server
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 System.out.println("Client connesso: ");
 
-                
-
                 // Lettura della richiesta inviata dal client
                 String line= reader.readLine();
                 String[] requestParts = line.split(" ");
                 String path =requestParts[1].substring(1);
                 File file;
+
+                //se la path è vuota allora carica index.html
                 if(path.equals(""))
                 {
                     file = new File("html/index.html");
                 }
+
+                //se la path è / allora carica index.html
                 else
                 {
                     file = new File("html/"+path);
                 }
 
+                //se la path è test allora reindirizza a google
+                if (path.equals("test")) 
+                {
+                    out.writeBytes("HTTP/1.1 301 Moved Permamently\n");
+                    out.writeBytes("Location:https://www.google.com\n");
+                    out.writeBytes("\n");
+                }
 
                 // Lettura delle linee successive della richiesta
                 while (!line.isEmpty()) 
                 {
                     System.out.println("Linea ricevuta: " + line);
                     line = reader.readLine();
-                }
+                }          
+
                 // Ricerca del file sul disco
                 if (file.exists()) 
                 {
                     sendBinaryFile(clientSocket, file);
                 } 
+                
+                //se il file non esiste
                 else 
                 {
                     String mess="file non esiste";
