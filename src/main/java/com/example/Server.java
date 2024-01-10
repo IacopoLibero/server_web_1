@@ -39,11 +39,10 @@ public class Server
                     System.out.println("Linea ricevuta: " + line);
                     line = reader.readLine();
                 }
-                File directory = new File("/html/index.html");
                 // Ricerca del file sul disco
                 if (file.exists()) 
                 {
-                    sendBinaryFile(clientSocket, directory);
+                    sendBinaryFile(clientSocket, file);
                 } 
                 else 
                 {
@@ -53,7 +52,7 @@ public class Server
                     // Invio della risposta al client
                     out.writeBytes("HTTP/1.1 404 not found\n");
                     out.writeBytes("Content-lenght: "+mess.length()+"\n");
-                    out.writeBytes("Content-type: text/html\n");
+                    out.writeBytes("Content-type: text/plain\n");
                     out.writeBytes("\n");
                     out.writeBytes(mess);
                 }
@@ -69,7 +68,7 @@ public class Server
     }
 
     
-    private static void sendBinaryFile(Socket socket, File file)
+    private static void sendBinaryFile(Socket socket, File file) throws IOException
     {
         try
         {
@@ -78,13 +77,13 @@ public class Server
             out.writeBytes("Content-lenght: "+file.length()+"\n");
 
             //funzione per scegliere estensione
-            out.writeBytes("Content-type:"+getFileExtension(file)+"\n");
+            out.writeBytes("Content-type:"+getContnentType(file)+"\n");
 
             out.writeBytes("\n");
-            FileInputStream in = new FileInputStream(file);
+            InputStream in = new FileInputStream(file);
             byte[] buffer = new byte[8192];
             int n;
-            while((n=in.read(buffer))!=-1)
+            while((n=in.read(buffer))>0)
             {
                 out.write(buffer,0,n);
             }
@@ -96,7 +95,7 @@ public class Server
         }
     }
     
-    private static String getFileExtension(File file) 
+    private static String getContnentType(File file) 
     {
         String fileName = file.getName();
         int dotIndex = fileName.lastIndexOf(".");
