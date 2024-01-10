@@ -27,11 +27,22 @@ public class Server
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 System.out.println("Client connesso: ");
 
+                
+
                 // Lettura della richiesta inviata dal client
                 String line= reader.readLine();
                 String[] requestParts = line.split(" ");
                 String path =requestParts[1].substring(1);
-                File file = new File(path);
+                File file;
+                if(path.equals(""))
+                {
+                    file = new File("html/index.html");
+                }
+                else
+                {
+                    file = new File("html/"+path);
+                }
+
 
                 // Lettura delle linee successive della richiesta
                 while (!line.isEmpty()) 
